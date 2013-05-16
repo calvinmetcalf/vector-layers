@@ -96,7 +96,7 @@ class L.TileLayer.GeoJSON extends L.TileLayer.Ajax
 L.tileLayer.geoJson=(params...)->
 	new L.TileLayer.GeoJSON(params...)
 
-m = L.map('map').setView([42.3221,-71.0335], 12).addHash()
+m = L.map('map').setView([42.3453,-71.0647],16).addHash()
 
 parks = L.tileLayer.geoJson('http://{s}.tile.openstreetmap.us/vectiles-land-usages/{z}/{x}/{y}.json',{},
 	onEachFeature: (f,l)->
@@ -105,7 +105,7 @@ parks = L.tileLayer.geoJson('http://{s}.tile.openstreetmap.us/vectiles-land-usag
 		l.bindPopup(array.join('<br/>'))
 	style:(f)->
 		out=
-			fillOpacity:1,
+			fillOpacity:1
 			stroke:false
 		switch f.properties.kind
 			when 'park','common','grass' then out.fillColor = 'rgb(115,178,115)'
@@ -119,13 +119,24 @@ parks = L.tileLayer.geoJson('http://{s}.tile.openstreetmap.us/vectiles-land-usag
 			when 'commercial','retail','hospital' then out.fillColor = 'rgb(255,193,69)'
 			when 'residential' then out.fillColor = 'rgb(212,47,58)'
 			when 'railway','pedestrian','parking' then out.fillColor = 'rgb(204,204,204)'
-			else out.fillColor = 'rgb(255,255,255)'
+			else out.fillColor = 'rgb(224,224,224)'
 		out
 ).addTo(m)
 water = L.tileLayer.geoJson('http://{s}.tile.openstreetmap.us/vectiles-water-areas/{z}/{x}/{y}.json',{},{style:
-	fillColor: 'rgb(151,219,242)',
-	fillOpacity:1,
-	stroke:false,
+	fillColor: 'rgb(151,219,242)'
+	fillOpacity:1
+	stroke:false
 	clickable:false
 }).addTo(m)
+roads = L.tileLayer.geoJson('http://{s}.tile.openstreetmap.us/vectiles-highroad/{z}/{x}/{y}.json',{},
+	onEachFeature: (f,l)->
+		array = for key, value of f.properties
+			"#{key}: #{value}"
+		l.bindPopup(array.join('<br/>'))
+	style:
+		fillColor: 'rgb(255,255,255)'
+		fillOpacity:1
+		weight:2
+		color:'rgb(240,240,240)'
+).addTo(m)
 water.bringToFront()
