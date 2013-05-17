@@ -151,12 +151,13 @@ L.TileLayer.GeoJSON = L.TileLayer.extend({
         L.TileLayer.prototype._update.apply(this, arguments);
     },
     _removeTile: function (id) {
-    	try{
-        	this.geojsonLayer.removeLayer(this._tiles[id]._jsonLayer);
+    	if(id in this._tiles){
+    		if(this._tiles[id]._jsonLayer&&this.geojsonLayer){
+    			this.geojsonLayer.removeLayer(this._tiles[id]._jsonLayer);
+    		}
         	delete this._tiles[id];
-    	}catch(e){
-    		console.log(id,e);
     	}
+
     },
     _tileOnLoad: function (e) {
     		this._jsonLayer = L.geoJson(this.datum,this._layer.geojsonOptions);
