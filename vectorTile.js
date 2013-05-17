@@ -76,7 +76,17 @@ L.Util.ajax = function (url,options, cb) {
 			XMHreq = window.XMLHttpRequest
 		}
 		var response, request = new XMHreq();
+		try{
 		request.open("GET", url);
+		}catch(e){
+			if(typeof XDomainRequest != "undefined") {
+				request=new XDomainRequest();
+				request.open("GET", url);
+			}else{
+				options.jsonp=true;
+				return L.Util.ajax(url,options, cb);
+			}
+		}
 		request.onreadystatechange = function() {
 			if (request.readyState === 4 && request.status === 200) {
 				if(window.JSON) {
