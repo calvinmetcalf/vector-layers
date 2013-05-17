@@ -1,3 +1,19 @@
+
+if(typeof Worker === "function"){
+L.Util.workers = [true,true,true,true,true,true,true,true].map(function(v){return communist(function (url, _cb) {
+		var request = new XMLHttpRequest();
+		request.open("GET", url);
+			request.onreadystatechange = function() {
+				var _resp;
+				if (request.readyState === 4 && request.status === 200) {
+					_resp = JSON.parse(request.responseText);
+					if(typeof _resp!=="undefined"){_cb(_resp);}
+					}
+			};
+			request.onerror=function(e){throw(e);};
+		request.send();
+	})});
+}
 L.Util.ajax = function (url,options, cb) {
     var cbName,ourl,cbSuffix,scriptNode, head, cbParam, XMHreq;
 	if(typeof options === "function"){
@@ -37,7 +53,10 @@ L.Util.ajax = function (url,options, cb) {
                 };
 		    }
 		};
-	}else{	
+	}else if (L.Util.workers){	
+		return L.Util.workers[(~~(Math.random()*8))].data(url).then(cb);
+	}else{
+		
 		// the following is from JavaScript: The Definitive Guide
 		if (window.XMLHttpRequest === undefined) {
 			XMHreq = function() {
@@ -70,6 +89,7 @@ L.Util.ajax = function (url,options, cb) {
 		};
 		request.send();	
 		return request;
+	
 	}
 };
 L.Util.ajax.cb = {};
@@ -121,8 +141,12 @@ L.TileLayer.GeoJSON = L.TileLayer.extend({
         L.TileLayer.prototype._update.apply(this, arguments);
     },
     _removeTile: function (id) {
-        this.geojsonLayer.removeLayer(this._tiles[id]._jsonLayer);
-        delete this._tiles[id];
+    	try{
+        	this.geojsonLayer.removeLayer(this._tiles[id]._jsonLayer);
+        	delete this._tiles[id];
+    	}catch(e){
+    		console.log(id,e);
+    	}
     },
     _tileOnLoad: function (e) {
     		this._jsonLayer = L.geoJson(this.datum,this._layer.geojsonOptions);
