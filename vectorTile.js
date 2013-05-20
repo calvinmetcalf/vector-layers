@@ -1,19 +1,5 @@
 
-if(typeof Worker === "function"){
-L.Util.workers = [true,true,true,true,true,true,true,true].map(function(v){return communist(function (url, _cb) {
-		var request = new XMLHttpRequest();
-		request.open("GET", url);
-			request.onreadystatechange = function() {
-				var _resp;
-				if (request.readyState === 4 && request.status === 200) {
-					_resp = JSON.parse(request.responseText);
-					if(typeof _resp!=="undefined"){_cb(_resp);}
-					}
-			};
-			request.onerror=function(e){throw(e);};
-		request.send();
-	})});
-}
+
 L.Util.ajax = function (url,options, cb) {
     var cbName,ourl,cbSuffix,scriptNode, head, cbParam, XMHreq;
 	if(typeof options === "function"){
@@ -53,8 +39,8 @@ L.Util.ajax = function (url,options, cb) {
                 };
 		    }
 		};
-	}else if (L.Util.workers){	
-		return L.Util.workers[(~~(Math.random()*8))].data(url).then(cb);
+	}else if (options.workers){	
+		return options.workers.data(url).then(cb);
 	}else{
 		
 		// the following is from JavaScript: The Definitive Guide
@@ -116,14 +102,40 @@ L.TileLayer.GeoJSON = L.TileLayer.extend({
         this.geojsonLayer = L.featureGroup([], geojsonOptions);
         this.geojsonOptions = geojsonOptions;
     },
+    bringToBack:function(){
+    	this.back=true;
+    	this.front=false;
+    	return this.geojsonLayer.bringToBack();
+    },
+    bringToFront:function(){
+    	this.front=true;
+    	this.back=false;
+    	return this.geojsonLayer.bringToFront();
+    },
      onAdd: function (map) {
         this._map = map;
+        if(typeof Worker === "function"){
+		this.workers = communist({data:function (url, _cb) {
+			var request = new XMLHttpRequest();
+			request.open("GET", url);
+				request.onreadystatechange = function() {
+				var _resp;
+				if (request.readyState === 4 && request.status === 200) {
+					_resp = JSON.parse(request.responseText);
+					if(typeof _resp!=="undefined"){_cb(_resp);}
+					}
+			};
+			request.onerror=function(e){throw(e);};
+		request.send();
+	}},4);
+}
         L.TileLayer.prototype.onAdd.call(this, map);
         map.addLayer(this.geojsonLayer);
     },
     onRemove: function (map) {
         map.removeLayer(this.geojsonLayer);
         L.TileLayer.prototype.onRemove.call(this, map);
+        this.workers.close();
     },
     _addTile: function(tilePoint, container) {
         var tile = { datum: null, processed: false, id : tilePoint.x + ':' + tilePoint.y};
@@ -138,7 +150,7 @@ L.TileLayer.GeoJSON = L.TileLayer.extend({
         tile.onload  = this._tileOnLoad;
      	var _reqs = this._requests;
         var len = _reqs.length
-        this._requests[len]=L.Util.ajax(this.getTileUrl(tilePoint),{jsonp:this.jsonp},function(data){
+        this._requests[len]=L.Util.ajax(this.getTileUrl(tilePoint),{jsonp:this.jsonp,workers:this.workers},function(data){
             tile.datum=data;
             tile.onload();
             _reqs[len]=false;
@@ -162,6 +174,12 @@ L.TileLayer.GeoJSON = L.TileLayer.extend({
     _tileOnLoad: function (e) {
     		this._jsonLayer = L.geoJson(this.datum,this._layer.geojsonOptions);
     		this._layer.geojsonLayer.addLayer(this._jsonLayer);
+    		if(this._layer.front){
+    			this._jsonLayer.bringToFront();
+    		}else if(this._layer.back){
+    			this._jsonLayer.bringToBack();
+    		}
+    		
     }
 });
 L.tileLayer.geoJson=function(a,b,c){

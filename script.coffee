@@ -23,13 +23,13 @@ parks = L.tileLayer.geoJson('http://{s}.tile.openstreetmap.us/vectiles-land-usag
 			when 'railway','pedestrian','parking' then out.fillColor = 'rgb(204,204,204)'
 			else out.fillColor = 'rgb(224,224,224)'
 		out
-).addTo(m)
+)
 window.water = L.tileLayer.geoJson('http://{s}.tile.openstreetmap.us/vectiles-water-areas/{z}/{x}/{y}.json',{},{style:
 	fillColor: 'rgb(151,219,242)'
 	fillOpacity:1
 	stroke:false
 	clickable:false
-}).addTo(m)
+})
 roads = L.tileLayer.geoJson('http://{s}.tile.openstreetmap.us/vectiles-highroad/{z}/{x}/{y}.json',{},
 	onEachFeature: (f,l)->
 		array = for key, value of f.properties
@@ -40,6 +40,14 @@ roads = L.tileLayer.geoJson('http://{s}.tile.openstreetmap.us/vectiles-highroad/
 		fillOpacity:1
 		weight:2
 		color:'rgb(240,240,240)'
-).addTo(m)
-water.bringToFront()
+)
+water.addTo(m)
+roads.addTo(m)
+parks.addTo(m)
+
 parks.bringToBack()
+water.bringToFront()
+
+window.water=water
+window.parks=parks
+window.roads=roads
