@@ -174,6 +174,7 @@ L.TileLayer.GeoJSON = L.TileLayer.extend({
     _tileOnLoad: function (e) {
     		this._jsonLayer = L.geoJson(this.datum,this._layer.geojsonOptions);
     		this._layer.geojsonLayer.addLayer(this._jsonLayer);
+    		this._jsonLayer.bringToFront();
     		if(this._layer.front){
     			this._jsonLayer.bringToFront();
     		}else if(this._layer.back){
