@@ -40,7 +40,7 @@ L.Util.ajax = function (url,options, cb) {
 		    }
 		};
 	}else if (options.workers){	
-		return options.workers.data(url).then(cb);
+		return options.workers[~~(Math.random()*4)].data(url).then(cb);
 	}else{
 		
 		// the following is from JavaScript: The Definitive Guide
@@ -115,7 +115,7 @@ L.TileLayer.GeoJSON = L.TileLayer.extend({
      onAdd: function (map) {
         this._map = map;
         if(typeof Worker === "function"){
-		this.workers = communist({data:function (url, _cb) {
+		this.workers = [true,true,true,true].map(function(){return communist({data:function (url, _cb) {
 			var request = new XMLHttpRequest();
 			request.open("GET", url);
 				request.onreadystatechange = function() {
@@ -127,7 +127,7 @@ L.TileLayer.GeoJSON = L.TileLayer.extend({
 			};
 			request.onerror=function(e){throw(e);};
 		request.send();
-	}},4);
+	}})});
 }
         L.TileLayer.prototype.onAdd.call(this, map);
         map.addLayer(this.geojsonLayer);
@@ -174,7 +174,7 @@ L.TileLayer.GeoJSON = L.TileLayer.extend({
     _tileOnLoad: function (e) {
     		this._jsonLayer = L.geoJson(this.datum,this._layer.geojsonOptions);
     		this._layer.geojsonLayer.addLayer(this._jsonLayer);
-    		this._jsonLayer.bringToFront();
+    		this._jsonLayer.bringToBack();
     		if(this._layer.front){
     			this._jsonLayer.bringToFront();
     		}else if(this._layer.back){
