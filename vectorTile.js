@@ -39,8 +39,8 @@ L.Util.ajax = function (url,options, cb) {
                 };
 		    }
 		};
-	}else if (options.workers){	
-		return options.workers[~~(Math.random()*4)].data(url).then(cb);
+	}else if (L.Util.ajax.woerkers){	
+		return L.Util.ajax.woerkers[~~(Math.random()*4)].data(url).then(cb);
 	}else{
 		
 		// the following is from JavaScript: The Definitive Guide
@@ -114,8 +114,8 @@ L.TileLayer.GeoJSON = L.TileLayer.extend({
     },
      onAdd: function (map) {
         this._map = map;
-        if(typeof Worker === "function"){
-		this.workers = [true,true,true,true].map(function(){return communist({data:function (url, _cb) {
+        if(typeof Worker === "function" && !L.Util.ajax.woerkers){
+		L.Util.ajax.woerkers = [true,true,true,true].map(function(){return communist({data:function (url, _cb) {
 			var request = new XMLHttpRequest();
 			request.open("GET", url);
 				request.onreadystatechange = function() {

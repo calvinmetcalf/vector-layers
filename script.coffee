@@ -1,5 +1,9 @@
-m = L.map('map').setView([42.3453,-71.0647],16).addHash()
+window.m = L.map('map')
 
+unless location.hash
+	m.setView([42.3453,-71.0647],16)
+
+m.addHash()
 parks = L.tileLayer.geoJson('http://{s}.tile.openstreetmap.us/vectiles-land-usages/{z}/{x}/{y}.json',{},
 	onEachFeature: (f,l)->
 		array = for key, value of f.properties
@@ -41,12 +45,12 @@ roads = L.tileLayer.geoJson('http://{s}.tile.openstreetmap.us/vectiles-highroad/
 		weight:2
 		color:'rgb(240,240,240)'
 )
-water.addTo(m)
 roads.addTo(m)
+water.addTo(m)
 parks.addTo(m)
 
+roads.bringToFront()
 parks.bringToBack()
-water.bringToFront()
 
 window.water=water
 window.parks=parks
