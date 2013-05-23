@@ -1,4 +1,5 @@
-window.m = L.map('map')
+window.m = L.map 'map', 
+	minZoom:15
 
 unless location.hash
 	m.setView([42.3453,-71.0647],16)
@@ -45,9 +46,11 @@ roads = L.tileLayer.geoJson('http://{s}.tile.openstreetmap.us/vectiles-highroad/
 		weight:2
 		color:'rgb(240,240,240)'
 )
-roads.addTo(m)
-water.addTo(m)
 parks.addTo(m)
+water.addTo(m)
+roads.addTo(m)
+
+
 
 roads.bringToFront()
 parks.bringToBack()

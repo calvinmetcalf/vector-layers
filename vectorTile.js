@@ -39,8 +39,8 @@ L.Util.ajax = function (url,options, cb) {
                 };
 		    }
 		};
-	}else if (L.Util.ajax.woerkers){	
-		return L.Util.ajax.woerkers[~~(Math.random()*4)].data(url).then(cb);
+	}else if (L.Util.ajax.workers){	
+		return L.Util.ajax.workers.data(url).then(cb);
 	}else{
 		
 		// the following is from JavaScript: The Definitive Guide
@@ -88,6 +88,24 @@ L.Util.ajax = function (url,options, cb) {
 	
 	}
 };
+L.Util.ajax.Workers=function(num){
+ if(typeof Worker === "function" && !("workers" in L.Util.ajax)){
+ 	
+			L.Util.ajax.workers=communist({data:function (url, _cb) {
+			var request = new XMLHttpRequest();
+			request.open("GET", url);
+				request.onreadystatechange = function() {
+				var _resp;
+				if (request.readyState === 4 && request.status === 200) {
+					_resp = JSON.parse(request.responseText);
+					if(typeof _resp!=="undefined"){_cb(_resp);}
+					}
+			};
+			request.onerror=function(e){throw(e);};
+		request.send();
+	}},num);
+	
+}}
 L.Util.ajax.cb = {};
 L.TileLayer.GeoJSON = L.TileLayer.extend({
     _requests: [],
@@ -114,21 +132,7 @@ L.TileLayer.GeoJSON = L.TileLayer.extend({
     },
      onAdd: function (map) {
         this._map = map;
-        if(typeof Worker === "function" && !L.Util.ajax.woerkers){
-		L.Util.ajax.woerkers = [true,true,true,true].map(function(){return communist({data:function (url, _cb) {
-			var request = new XMLHttpRequest();
-			request.open("GET", url);
-				request.onreadystatechange = function() {
-				var _resp;
-				if (request.readyState === 4 && request.status === 200) {
-					_resp = JSON.parse(request.responseText);
-					if(typeof _resp!=="undefined"){_cb(_resp);}
-					}
-			};
-			request.onerror=function(e){throw(e);};
-		request.send();
-	}})});
-}
+       L.Util.ajax.Workers(6);
         L.TileLayer.prototype.onAdd.call(this, map);
         map.addLayer(this.geojsonLayer);
     },
